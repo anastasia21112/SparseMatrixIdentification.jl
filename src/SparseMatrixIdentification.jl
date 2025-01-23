@@ -32,47 +32,6 @@ function compute_bandedness(A, bandwidth)
     return percentage_filled
 end
 
-## use the compute banded function to compute the bandedness given different bandsizes
-# function isbanded(A)
-#     n = size(A, 1)
-#     if n >= 10
-#         count = 5
-#         potential_band_sizes = []
-
-#         while count < n - 5
-#             push!(potential_band_sizes, count += 5)
-#             # push!(potential_band_sizes, count)
-#             # count += 5
-#         end
-        
-#         for bandsize in potential_band_sizes
-#             percentage_filled = compute_bandedness(A, bandsize)
-#             if percentage_filled >= 90
-#                 return true 
-#             end
-#         end
-
-#         return false
-#     else 
-#         potential_band_sizes = []
-#         count = 0
-#         while count < n - 1
-#             push!(potential_band_sizes, count += 1)
-#             # push!(potential_band_sizes, count)
-#             # count += 5
-#         end
-        
-#         for bandsize in potential_band_sizes
-#             percentage_filled = compute_bandedness(A, bandsize)
-#             if percentage_filled >= 90
-#                 return true 
-#             end
-#         end
-
-#         return false
-#     end
-# end
-
 function is_banded(A, bandwidth)
     n = size(A, 1)  # assuming A is square
 
@@ -100,7 +59,7 @@ end
 export getstructure
 ## get the percentage banded for a bandwidth of 5 and percentage sparsity
 function getstructure(A::Matrix)::Any
-    percentage_banded = compute_bandedness(A, 5)
+    percentage_banded = compute_bandedness(A, 1)
     percentage_sparsity = compute_sparsity(SparseMatrixCSC(A))
 
     return (percentage_banded, percentage_sparsity)
@@ -111,17 +70,13 @@ export sparsestructure
 function sparsestructure(A::SparseMatrixCSC)::Any
     sym = issymmetric(A)
     herm = ishermitian(A)
-    banded = isbanded(A)
+    banded = is_banded(A,2)
     posdef = isposdef(A)
     lower_triangular = istril(A)
     upper_triangular = istriu(A)
 
 
     n = size(A, 1)
-
-    # if banded
-    #     return BandedMatrix(A)
-    # end
     
     if sym 
         return Symmetric(A)
@@ -137,6 +92,10 @@ function sparsestructure(A::SparseMatrixCSC)::Any
 
     if upper_triangular
         return UpperTriangular(A)
+    end
+
+    if banded
+        return BandedMatrix(A)
     end
 
     return SparseMatrixCSC(A)

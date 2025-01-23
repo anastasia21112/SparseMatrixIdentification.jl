@@ -74,15 +74,15 @@ end
 
     # Test 2: Identity matrix
     A = Matrix(I, 3, 3)
-    @test getstructure(A) == (100.0, 2/3)
+    @test getstructure(A) == (100.0, 0.6666666666666667)
 end
 
 # Test for `sparsestructure` function
 @testset "Test sparsestructure" begin
-    @show
+ 
     # Test 1: Sparse banded matrix (banded)
-    # A = [1 2 0; 3 4 5; 0 6 7]
-    # @test sparsestructure(sparse(A)) isa BandedMatrix
+    A = [ 1  2  0; 3  4  5; 0  6  7 ]
+    @test sparsestructure(sparse(A)) isa BandedMatrix
 
     # Test 2: Symmetric matrix
     A = [1 2 2; 2 3 4; 2 4 5]
