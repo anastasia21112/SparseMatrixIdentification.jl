@@ -33,13 +33,13 @@ using BandedMatrices
     @test SparseMatrixIdentification.compute_bandedness(A, bandwidth) == 100.0 
 end
 
-# Test for `isbanded` function
+# Test for `is_banded` function
 @testset "Test is_banded" begin
-    # Test 1: Banded matrix with filled elements within the band
+    # Test 1: matrix with filled elements within the band
     A = [1 2 0; 3 4 5; 0 6 7]
     @test SparseMatrixIdentification.is_banded(A, 1) == false
 
-    # Test 2: Identity matrix (bandwidth = 0, considered banded)
+    # Test 2: Identity matrix (banded)
     A = Matrix(I, 3, 3)
     @test SparseMatrixIdentification.is_banded(A, 1) == true
 

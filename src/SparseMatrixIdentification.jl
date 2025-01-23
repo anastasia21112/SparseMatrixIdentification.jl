@@ -3,7 +3,7 @@ using LinearAlgebra
 using SparseArrays
 using BandedMatrices
 
-## compute the percentage banded for a matrix given a bandwidth
+# compute the percentage banded for a matrix given a bandwidth
 function compute_bandedness(A, bandwidth)
 
     if bandwidth == 0 
@@ -49,7 +49,7 @@ function is_banded(A, bandwidth)
     return non_band_nonzeros == 0
 end
 
-## compute the sparsity for a given matrix
+# compute the sparsity for a given matrix
 function compute_sparsity(A)
     n = size(A, 1)
     percentage_sparsity = length(nonzeros(A)) / n^2
@@ -57,7 +57,8 @@ function compute_sparsity(A)
 end
 
 export getstructure
-## get the percentage banded for a bandwidth of 5 and percentage sparsity
+
+# get the percentage banded for a bandwidth of 1 and percentage sparsity
 function getstructure(A::Matrix)::Any
     percentage_banded = compute_bandedness(A, 1)
     percentage_sparsity = compute_sparsity(SparseMatrixCSC(A))
@@ -66,7 +67,8 @@ function getstructure(A::Matrix)::Any
 end
 
 export sparsestructure
-## return the best type of matrix for a given sparse matrix
+
+# return the best type of matrix for a given sparse matrix
 function sparsestructure(A::SparseMatrixCSC)::Any
     sym = issymmetric(A)
     herm = ishermitian(A)
