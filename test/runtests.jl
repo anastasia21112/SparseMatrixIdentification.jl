@@ -34,18 +34,18 @@ using BandedMatrices
 end
 
 # Test for `isbanded` function
-@testset "Test isbanded" begin
+@testset "Test is_banded" begin
     # Test 1: Banded matrix with filled elements within the band
     A = [1 2 0; 3 4 5; 0 6 7]
-    @test SparseMatrixIdentification.isbanded(A) == true
+    @test SparseMatrixIdentification.is_banded(A, 1) == false
 
     # Test 2: Identity matrix (bandwidth = 0, considered banded)
     A = Matrix(I, 3, 3)
-    @test SparseMatrixIdentification.isbanded(A) == true
+    @test SparseMatrixIdentification.is_banded(A, 1) == true
 
     # Test 3: Full random matrix (non-banded)
     A = [1 2 3; 4 5 6; 7 8 9]
-    @test SparseMatrixIdentification.isbanded(A) == true
+    @test SparseMatrixIdentification.is_banded(A, 1) == false
 end
 
 # Test for `compute_sparsity` function
@@ -66,7 +66,7 @@ end
     @test SparseMatrixIdentification.compute_sparsity(A) == 0.0  # no sparsity
 end
 
-Test for `getstructure` function
+# Test for `getstructure` function
 @testset "Test getstructure" begin
     # Test 1: Band matrix
     A = [1 2 0; 3 4 5; 0 6 7]

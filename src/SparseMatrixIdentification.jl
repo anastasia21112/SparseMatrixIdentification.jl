@@ -33,45 +33,63 @@ function compute_bandedness(A, bandwidth)
 end
 
 ## use the compute banded function to compute the bandedness given different bandsizes
-function isbanded(A)
-    n = size(A, 1)
-    if n >= 10
-        count = 5
-        potential_band_sizes = []
+# function isbanded(A)
+#     n = size(A, 1)
+#     if n >= 10
+#         count = 5
+#         potential_band_sizes = []
 
-        while count < n - 5
-            push!(potential_band_sizes, count += 5)
-            # push!(potential_band_sizes, count)
-            # count += 5
-        end
+#         while count < n - 5
+#             push!(potential_band_sizes, count += 5)
+#             # push!(potential_band_sizes, count)
+#             # count += 5
+#         end
         
-        for bandsize in potential_band_sizes
-            percentage_filled = compute_bandedness(A, bandsize)
-            if percentage_filled >= 90
-                return true 
+#         for bandsize in potential_band_sizes
+#             percentage_filled = compute_bandedness(A, bandsize)
+#             if percentage_filled >= 90
+#                 return true 
+#             end
+#         end
+
+#         return false
+#     else 
+#         potential_band_sizes = []
+#         count = 0
+#         while count < n - 1
+#             push!(potential_band_sizes, count += 1)
+#             # push!(potential_band_sizes, count)
+#             # count += 5
+#         end
+        
+#         for bandsize in potential_band_sizes
+#             percentage_filled = compute_bandedness(A, bandsize)
+#             if percentage_filled >= 90
+#                 return true 
+#             end
+#         end
+
+#         return false
+#     end
+# end
+
+function is_banded(A, bandwidth)
+    n = size(A, 1)  # assuming A is square
+
+    # Count the number of non-zero entries outside the band
+    non_band_nonzeros = 0
+    for r in 1:n
+        for c in 1:n
+            if abs(r - c) >= bandwidth && A[r, c] != 0
+                non_band_nonzeros += 1
             end
         end
-
-        return false
-    else 
-        potential_band_sizes = []
-        count = 0
-        while count < n - 1
-            push!(potential_band_sizes, count += 1)
-            # push!(potential_band_sizes, count)
-            # count += 5
-        end
-        
-        for bandsize in potential_band_sizes
-            percentage_filled = compute_bandedness(A, bandsize)
-            if percentage_filled >= 90
-                return true 
-            end
-        end
-
-        return false
     end
+    
+    # If there are any non-zero entries outside the band, it's not banded
+    return non_band_nonzeros == 0
 end
+
 ## compute the sparsity for a given matrix
 function compute_sparsity(A)
     n = size(A, 1)
