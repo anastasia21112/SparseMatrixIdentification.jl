@@ -9,7 +9,6 @@ using Test
 using LinearAlgebra
 using SparseArrays
 using BandedMatrices
-Pkg.test("SparseMatrixIdentification"; coverage=true)
 
 # Test for `compute_bandedness` function
 @testset "Test compute_bandedness" begin
