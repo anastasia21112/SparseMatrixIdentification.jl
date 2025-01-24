@@ -32,9 +32,9 @@ function compute_bandedness(A, bandwidth)
     return percentage_filled
 end
 
-function is_banded(A, bandwidth)
+function is_banded(A, threshold)
     n = size(A, 1)  # assuming A is square
-
+    bandwidth = n * threshold
     # Count the number of non-zero entries outside the band
     non_band_nonzeros = 0
     for r in 1:n
@@ -69,10 +69,10 @@ end
 export sparsestructure
 
 # return the best type of matrix for a given sparse matrix
-function sparsestructure(A::SparseMatrixCSC)::Any
+function sparsestructure(A::SparseMatrixCSC, threshold)::Any
     sym = issymmetric(A)
     herm = ishermitian(A)
-    banded = is_banded(A,2)
+    banded = is_banded(A, threshold)
     posdef = isposdef(A)
     lower_triangular = istril(A)
     upper_triangular = istriu(A)
