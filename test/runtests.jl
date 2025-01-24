@@ -10,6 +10,7 @@ using LinearAlgebra
 using SparseArrays
 using BandedMatrices
 using ToeplitzMatrices
+using BlockBandedMatrices
 
 @testset "Test check_diagonal" begin
     A = [1 2 3; 4 1 5; 6 7 1]
@@ -146,6 +147,72 @@ end
     @test SparseMatrixIdentification.compute_sparsity(A) == 0.0  # no sparsity
 end
 
+@testset "Test is_block_banded" begin
+    # Test 1: Block banded matrix (2x2 blocks, bandwidth = 1)
+    A1 = [
+        1 2 0 0;
+        3 4 5 0;
+        0 6 7 8;
+        0 0 9 10
+    ]
+    @test SparseMatrixIdentification.is_block_banded(A1, 2, 1) == false
+
+    # Test 2: Block banded matrix (2x2 blocks, bandwidth = 2)
+    A2 = [
+        1 2 0 0 0;
+        3 4 5 0 0;
+        0 6 7 8 0;
+        0 0 9 10 11;
+        0 0 0 12 13
+    ]
+    @test SparseMatrixIdentification.is_block_banded(A2, 2, 2) == true
+
+    # Test 3: Non-block banded matrix (no block structure)
+    A3 = [
+        1 2 3 4;
+        5 6 7 8;
+        9 10 11 12;
+        13 14 15 16
+    ]
+    @test SparseMatrixIdentification.is_block_banded(A3, 2, 1) == false
+
+    # Test 4: Block banded matrix (1x1 blocks, bandwidth = 0)
+    A4 = [
+        1 0 0 0;
+        0 1 0 0;
+        0 0 1 0;
+        0 0 0 1
+    ]
+    @test SparseMatrixIdentification.is_block_banded(A4, 1, 0) == false
+
+    # Test 5: Matrix with blocks that are outside the bandwidth
+    A5 = [
+        1 2 0 0;
+        3 4 5 0;
+        0 0 7 8;
+        0 0 0 10
+    ]
+    @test SparseMatrixIdentification.is_block_banded(A5, 2, 1) == false
+
+    # Test 6: Matrix with non-zero elements outside the expected block band
+    A6 = [
+        1 2 0 0 0;
+        3 4 5 0 0;
+        0 6 7 8 0;
+        0 0 0 0 0;
+        0 0 9 10 11
+    ]
+    @test SparseMatrixIdentification.is_block_banded(A6, 2, 2) == true
+
+    # Test 7: Small 1x1 matrix
+    A7 = [1]
+    @test SparseMatrixIdentification.is_block_banded(A7, 1, 0) == true
+
+    # Test 8: Empty matrix (edge case)
+    A8 = Int[]
+    @test SparseMatrixIdentification.is_block_banded(A8, 1, 0) == true
+end
+
 # Test for `getstructure` function
 @testset "Test getstructure" begin
     # Test 1: Band matrix
@@ -162,32 +229,45 @@ end
  
     # Test 1: Sparse banded matrix (banded)
     A = [ 1  2  0; 3  4  5; 0  6  7 ]
-    @test sparsestructure(sparse(A), 2/3) isa BandedMatrix
+    @test sparsestructure(sparse(A), band_threshold = 2/3) isa BandedMatrix
 
     # Test 2: Symmetric matrix
     A = [1 2 2; 2 3 4; 2 4 5]
-    @test sparsestructure(SparseMatrixCSC(A), 1/3) isa Symmetric
+    @test sparsestructure(SparseMatrixCSC(A)) isa Symmetric
 
     # Test 3: Hermitian matrix (complex conjugate symmetry)
     A = [1 2+3im 4+5im; 2-3im 6 7+8im; 4-5im 7-8im 9]
-    @test sparsestructure(SparseMatrixCSC(A), 1/3) isa Hermitian
+    @test sparsestructure(SparseMatrixCSC(A)) isa Hermitian
 
     # Test 4: Lower triangular matrix
     A = [1 0 0; 2 3 0; 4 5 6]
-    @test sparsestructure(SparseMatrixCSC(A), 1/3) isa LowerTriangular
+    @test sparsestructure(SparseMatrixCSC(A)) isa LowerTriangular
 
     # Test 5: Upper triangular matrix
     A = [1 2 3; 0 4 5; 0 0 6]
-    @test sparsestructure(SparseMatrixCSC(A), 1/3) isa UpperTriangular
+    @test sparsestructure(SparseMatrixCSC(A)) isa UpperTriangular
 
     # Test 6: Generic sparse matrix (fallback)
     B = [1 2 3; 4 5 6; 7 8 9]
     sparse_B = SparseMatrixCSC(B)
-    @test sparsestructure(sparse_B, 1/3) isa SparseMatrixCSC
+    @test sparsestructure(sparse_B) isa SparseMatrixCSC
 
     # Test 7: Toeplitz Sparse Matrix
     T = [1 2 0; 0 1 2; 0 0 1]
     sparse_T = SparseMatrixCSC(T)
-    @test sparsestructure(sparse_T, 1/3) isa Toeplitz
+    @test sparsestructure(sparse_T) isa Toeplitz
+
+    # Test 8: Block Banded Matrix
+    B = [1 1 0 0 0 0 0 0;
+        1 1 1 1 0 0 0 0;
+        1 1 1 1 1 1 0 0;
+        0 0 1 1 1 1 1 0;
+        0 0 0 1 1 1 1 1;
+        0 0 0 0 1 1 1 1;
+        0 0 0 0 0 1 1 1;
+        0 0 0 0 0 0 1 1]
+    sparse_B = SparseMatrixCSC(B)
+    @test sparsestructure(sparse_B, block_threshold=2, band_threshold=1/3) isa BlockBandedMatrix
+   
 end
 
