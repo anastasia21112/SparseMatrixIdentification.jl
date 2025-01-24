@@ -3,6 +3,7 @@ using LinearAlgebra
 using SparseArrays
 using BandedMatrices
 using ToeplitzMatrices
+using BlockBandedMatrices
 
 
 # check the diagonal of a given matrix, helper for is_toeplitz
@@ -97,6 +98,32 @@ function is_banded(A, threshold)
     return non_band_nonzeros == 0
 end
 
+# check if block banded
+function is_block_banded(A, block_size, bandwidth)
+    n = size(A, 1)
+    
+    if n == 1 || n == 0
+        return true
+    end 
+
+    m = size(A, 2)
+    for i in 1:block_size:n-block_size+1
+        for j in 1:block_size:m-block_size+1
+
+            # Check if the current block is within the band width
+            if abs(i - j) >= bandwidth * block_size
+
+                # Ensure the current block is zero if outside the bandwidth
+                block = A[i:min(i+block_size-1, n), j:min(j+block_size-1, m)]
+                if any(block .!= 0)
+                    return false
+                end
+            end
+        end
+    end
+    return true
+end
+
 # compute the sparsity for a given matrix
 function compute_sparsity(A)
     n = size(A, 1)
@@ -117,27 +144,38 @@ end
 export sparsestructure
 
 # return the best type of matrix for a given sparse matrix
-function sparsestructure(A::SparseMatrixCSC, threshold)::Any
+function sparsestructure(A::SparseMatrixCSC; block_threshold=1, band_threshold=0.0)::Any
     sym = issymmetric(A)
     herm = ishermitian(A)
-    banded = is_banded(A, threshold)
+    banded = is_banded(A, band_threshold)
     posdef = isposdef(A)
     lower_triangular = istril(A)
     upper_triangular = istriu(A)
     toeplitz = is_toeplitz(A)
-
-    n = size(A, 1)
     
+    n = size(A, 1)
+    bandwidth = round(band_threshold * n)
+    block_banded = is_block_banded(A, block_threshold, bandwidth)
+
     if toeplitz
         first_row = A[1, :]
         first_col = A[:, 1]
         return Toeplitz(first_col, first_row)
     end
-    
+
+    if banded
+        return BandedMatrix(A)
+    end
+
+    if block_banded
+        return BlockBandedMatrix(A, (block_threshold, block_threshold))
+    end
+
     if sym 
         return Symmetric(A)
     end 
 
+    
     if herm
         return Hermitian(A)
     end
@@ -149,11 +187,7 @@ function sparsestructure(A::SparseMatrixCSC, threshold)::Any
     if upper_triangular
         return UpperTriangular(A)
     end
-
-    if banded
-        return BandedMatrix(A)
-    end
-
+    
     return SparseMatrixCSC(A)
 end
 

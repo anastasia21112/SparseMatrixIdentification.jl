@@ -5,6 +5,7 @@ version = "1.0.0-DEV"
 
 [deps]
 BandedMatrices = "aae01518-5342-5314-be14-df237901396f"
+BlockBandedMatrices = "ffab5731-97b5-5995-9138-79e8c1846df0"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 ToeplitzMatrices = "c751599d-da0a-543b-9d20-d0a503d91d24"
