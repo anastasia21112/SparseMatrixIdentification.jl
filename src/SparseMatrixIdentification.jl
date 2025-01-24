@@ -2,6 +2,54 @@ module SparseMatrixIdentification
 using LinearAlgebra
 using SparseArrays
 using BandedMatrices
+using ToeplitzMatrices
+
+
+# check the diagonal of a given matrix, helper for is_toeplitz
+function check_diagonal(A, i, j)
+    N = size(A, 1)
+    M = size(A, 2)
+
+    num = A[i, j]
+    i += 1
+    j += 1
+
+
+    while i <= N && j <= M
+        if A[i, j] != num
+            return false
+        end
+        i += 1
+        j += 1
+    end
+    return true
+end
+
+# check if toeplitz matrix
+function is_toeplitz(mat)
+    N = size(mat, 1)  
+    
+    if N == 1
+        return true
+    end
+
+    M = size(mat, 2)
+
+    
+    for j in 1:M
+        if !check_diagonal(mat, 1, j)
+            return false
+        end
+    end
+
+    for i in 2:N
+        if !check_diagonal(mat, i, 1)
+            return false
+        end
+    end
+
+    return true
+end
 
 # compute the percentage banded for a matrix given a bandwidth
 function compute_bandedness(A, bandwidth)
@@ -76,9 +124,15 @@ function sparsestructure(A::SparseMatrixCSC, threshold)::Any
     posdef = isposdef(A)
     lower_triangular = istril(A)
     upper_triangular = istriu(A)
-
+    toeplitz = is_toeplitz(A)
 
     n = size(A, 1)
+    
+    if toeplitz
+        first_row = A[1, :]
+        first_col = A[:, 1]
+        return Toeplitz(first_col, first_row)
+    end
     
     if sym 
         return Symmetric(A)
